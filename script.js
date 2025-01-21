@@ -33,11 +33,23 @@ function onResults(results) {
     canvasCtx.restore();
 }
 
-const camera = new Camera(videoElement, {
-    onFrame: async () => {
-        await hands.send({image: videoElement});
-    },
-    width: 1280,
-    height: 720
+// Request access to the back camera
+navigator.mediaDevices.getUserMedia({
+    video: {
+        facingMode: { exact: "environment" }
+    }
+}).then(stream => {
+    videoElement.srcObject = stream;
+    videoElement.play();
+
+    const camera = new Camera(videoElement, {
+        onFrame: async () => {
+            await hands.send({image: videoElement});
+        },
+        width: 1280,
+        height: 720
+    });
+    camera.start();
+}).catch(err => {
+    console.error("Error accessing the camera: ", err);
 });
-camera.start();
